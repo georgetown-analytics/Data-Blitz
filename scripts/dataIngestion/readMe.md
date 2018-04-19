@@ -1,6 +1,6 @@
 # CSV to mySQLDB import
 
-## The pipeline definition is used to import CSV data from files in aws S3 to aws RDS mySQLDB.
+The pipeline definition is used to import CSV data from files in aws S3 to aws RDS mySQLDB.
 
 ## Running the pipeline
 
