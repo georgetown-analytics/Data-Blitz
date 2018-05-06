@@ -6,7 +6,7 @@ The pipeline definition is used to import CSV data from files in aws S3 to aws R
 
 User needs to provide:
 
-Input csv file: The csv file in S3 whose data will be imported
-Data connection properties: URL, User, password are needed to connect to DB
-Create statement: create statement needed to create table
+Input csv file: The csv file in S3 whose data will be imported/n
+Data connection properties: URL, User, password are needed to connect to DB/n
+Create statement: create statement needed to create table/n
 Insert statement: insert statement needed to insert data in table
