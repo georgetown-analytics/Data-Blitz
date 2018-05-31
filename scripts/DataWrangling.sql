@@ -1,10 +1,6 @@
-select * From INFORMATION_SCHEMA.COLUMNS Where column_name = 'psr';
+-- creating foreign keys, which helps joins to run fast
 
+alter table PBP ADD CONSTRAINT fk_pid FOREIGN KEY (pid) REFERENCES PLAYER(player); 
+alter table PBP ADD CONSTRAINT fk_gid FOREIGN KEY (gid) REFERENCES GAME(gid); 
+alter table PRO_BOWL ADD CONSTRAINT fk_PLAYER_ID FOREIGN KEY (PLAYER_ID) REFERENCES PLAYER(player); 
 
-alter table PASS ADD CONSTRAINT fk_PASS_trg FOREIGN KEY (trg) REFERENCES PLAYER(player); 
-alter table PASS ADD CONSTRAINT fk_PASS_dfb FOREIGN KEY (dfb) REFERENCES PLAYER(player); 
-
-
-
-alter table PASS_FULL modify trg varchar(7) CHARACTER SET utf8 NOT NULL;
-alter table PASS_FULL modify dfb varchar(7) CHARACTER SET utf8 NOT NULL;
