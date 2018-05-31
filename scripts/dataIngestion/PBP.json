@@ -138,10 +138,10 @@
   "values": {
     "myRDSInstanceId": "nflnumbers",
     "myRDSUsername": "db_gtown_2018",
-    "myRDSTableInsertSql": "INSERT INTO `db_nfl`.`PASS_FULL2`\n(`PID`,`psr`,`trg`,`loc`,`yds`,`comp`,`succ`,`spk`,\n`dfb`,`TD`,`INTRCPT`)\nVALUES\n(?,?,?,?,?,?,?,?,?,?,?)",
+    "myRDSTableInsertSql": "INSERT INTO `db_nfl`.`PLAYER` (`player`,`fname`,`lname`,`pname`,`pos1`,`pos2`,`height`,`weight`,`dob`,`forty`,`bench`,`vertical`,`broad`,`shuttle`,`cone`,`arm`,`hand`,`dpos`,`col`,`dv`,`start`,`cteam`,`posd`,`jnum`,`dcp`,`nflid`,`pimg`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
     "*myRDSPassword": "Gtown2018",
-    "myRDSCreateTableSql": "CREATE TABLE IF NOT EXISTS PASS_FULL2 (\n   `PID` decimal(38,0) DEFAULT NULL,\n  `psr` varchar(7) CHARACTER SET utf8 NOT NULL,\n  `trg` varchar(7) CHARACTER SET utf8 DEFAULT NULL,\n  `loc` text,\n  `yds` int(11) DEFAULT NULL,\n  `comp` int(11) DEFAULT NULL,\n  `succ` int(11) DEFAULT NULL,\n  `spk` int(11) DEFAULT NULL,\n  `dfb` varchar(7) CHARACTER SET utf8 NOT NULL,\n  `TD` int(1) DEFAULT NULL,\n  `INTRCPT` int(1) DEFAULT NULL\n) ENGINE=InnoDB DEFAULT CHARSET=latin1;",
-    "myRDSTableName": "PASS_FULL2",
-    "myInputS3Loc": "s3://gtown-data-science-2018-bucket/nfl-data/PASS_FULL_2.csv"
+    "myRDSCreateTableSql": "CREATE TABLE `PLAYER` (`player` varchar(7) CHARACTER SET utf8 NOT NULL,  `fname` text,  `lname` text,  `pname` text,  `pos1` text,  `pos2` text,  `height` int(11) DEFAULT NULL,  `weight` int(11) DEFAULT NULL, `dob` text,  `forty` double DEFAULT NULL,  `bench` int(11) DEFAULT NULL,  `vertical` double DEFAULT NULL,  `broad` int(11) DEFAULT NULL,  `shuttle` double DEFAULT NULL,  `cone` double DEFAULT NULL,  `arm` int(11) DEFAULT NULL,  `hand` double DEFAULT NULL,  `dpos` int(11) DEFAULT NULL,  `col` text,  `dv` text,  `start` int(11) DEFAULT NULL,  `cteam` text,  `posd` text,  `jnum` int(11) DEFAULT NULL,  `dcp` int(11) DEFAULT NULL,  `nflid` decimal(38,0) DEFAULT NULL,  `pimg` text,  PRIMARY KEY (`player`))",
+    "myRDSTableName": "PLAYER",
+    "myInputS3Loc": "s3://gtown-data-science-2018-bucket/nfl-data/PLAYER.csv"
   }
 }
