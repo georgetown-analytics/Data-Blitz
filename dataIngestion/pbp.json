@@ -1,0 +1,147 @@
+{
+  "objects": [
+    {
+      "*password": "#{*myRDSPassword}",
+      "name": "rds_mysql",
+      "jdbcProperties": "allowMultiQueries=true",
+      "id": "rds_mysql",
+      "type": "RdsDatabase",
+      "rdsInstanceId": "#{myRDSInstanceId}",
+      "username": "#{myRDSUsername}"
+    },
+    {
+      "output": {
+        "ref": "DestinationRDSTable"
+      },
+      "input": {
+        "ref": "S3InputDataLocation"
+      },
+      "dependsOn": {
+        "ref": "RdsMySqlTableCreateActivity"
+      },
+      "name": "DataLoadActivity",
+      "id": "DataLoadActivity",
+      "runsOn": {
+        "ref": "Ec2Instance"
+      },
+      "type": "CopyActivity"
+    },
+    {
+      "database": {
+        "ref": "rds_mysql"
+      },
+      "name": "RdsMySqlTableCreateActivity",
+      "runsOn": {
+        "ref": "Ec2Instance"
+      },
+      "id": "RdsMySqlTableCreateActivity",
+      "type": "SqlActivity",
+      "script": "#{myRDSCreateTableSql}"
+    },
+    {
+      "instanceType": "t1.micro",
+      "name": "Ec2Instance",
+      "actionOnTaskFailure": "terminate",
+      "securityGroups": "#{myEc2RdsSecurityGrps}",
+      "id": "Ec2Instance",
+      "type": "Ec2Resource",
+      "terminateAfter": "2 Hours"
+    },
+    {
+      "database": {
+        "ref": "rds_mysql"
+      },
+      "maximumRetries": "1",
+      "name": "DestinationRDSTable",
+      "insertQuery": "#{myRDSTableInsertSql}",
+      "id": "DestinationRDSTable",
+      "type": "SqlDataNode",
+      "table": "#{myRDSTableName}",
+      "selectQuery": "select * from #{table}"
+    },
+    {
+      "name": "DataFormat1",
+      "id": "DataFormat1",
+      "type": "CSV"
+    },
+    {
+      "failureAndRerunMode": "CASCADE",
+      "resourceRole": "DataPipelineDefaultResourceRole",
+      "role": "DataPipelineDefaultRole",
+      "scheduleType": "ONDEMAND",
+      "name": "Default",
+      "id": "Default"
+    },
+    {
+      "directoryPath": "#{myInputS3Loc}",
+      "dataFormat": {
+        "ref": "DataFormat1"
+      },
+      "name": "S3InputDataLocation",
+      "id": "S3InputDataLocation",
+      "type": "S3DataNode"
+    }
+  ],
+  "parameters": [
+    {
+      "description": "RDS MySQL password",
+      "id": "*myRDSPassword",
+      "type": "String"
+    },
+    {
+      "watermark": "security group name",
+      "helpText": "The names of one or more EC2 security groups that have access to the RDS MySQL cluster.",
+      "description": "RDS MySQL security group(s)",
+      "isArray": "true",
+      "optional": "true",
+      "id": "myEc2RdsSecurityGrps",
+      "type": "String"
+    },
+    {
+      "description": "RDS MySQL username",
+      "id": "myRDSUsername",
+      "type": "String"
+    },
+    {
+      "description": "Input S3 file path",
+      "id": "myInputS3Loc",
+      "type": "AWS::S3::ObjectKey"
+    },
+    {
+      "helpText": "The SQL statement to insert data into the RDS MySQL table.",
+      "watermark": "INSERT INTO #{table} (col1, col2, col3) VALUES(?, ?, ?) ;",
+      "description": "Insert SQL query",
+      "id": "myRDSTableInsertSql",
+      "type": "String"
+    },
+    {
+      "helpText": "The name of an existing table or a new table that will be created based on the create table SQL query parameter below.",
+      "description": "RDS MySQL table name",
+      "id": "myRDSTableName",
+      "type": "String"
+    },
+    {
+      "watermark": "CREATE TABLE pet IF NOT EXISTS (name VARCHAR(20), owner VARCHAR(20), species VARCHAR(20), gender CHAR(1), birth DATE, death DATE);",
+      "helpText": "The idempotent SQL statement to create the RDS MySQL table if it does not already exist.",
+      "description": "Create table SQL query",
+      "optional": "true",
+      "id": "myRDSCreateTableSql",
+      "type": "String"
+    },
+    {
+      "watermark": "DB Instance",
+      "description": "RDS Instance ID",
+      "id": "myRDSInstanceId",
+      "type": "String"
+    }
+  ],
+  "values": {
+    "myRDSInstanceId": "nflnumbers",
+    "myRDSUsername": "db_gtown_2018",
+    "myRDSTableInsertSql": "INSERT INTO `db_nfl`.`PBP`(`gid`,`pid`,`off`,`DEF`,`type`,`dseq`,`len`,`qtr`,`min`,`sec`,`ptso`,`ptsd`,`timo`,`timd`,`dwn`,`ytg`,`yfog`,`zone`,`yds`,`succ`,`fd`,`sg`,`nh`,`pts`,`bc`,`kne`,`dir`,`rtck1`,`rtck2`,`psr`,`comp`,`spk`,`loc`,`trg`,`DFB`,`ptck1`,`ptck2`,`sk1`,`sk2`,`ptm1`,`pen1`,`desc1`,`cat1`,`pey1`,`act1`,`ptm2`,`pen2`,`desc2`,`cat2`,`pey2`,`act2`,`ptm3`,`pen3`,`desc3`,`cat3`,`pey3`,`act3`,`ints`,`iry`,`fum`,`FRCV`,`fry`,`FORC`,`saf`,`blk`,`BRCV`,`fgxp`,`FKICKER`,`dist`,`good`,`punter`,`pgro`,`pnet`,`ptb`,`pr`,`pry`,`pfc`,`kicker`,`kgro`,`knet`,`ktb`,`kr`,`kry`,`detail`) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+    "*myRDSPassword": "Gtown2018",
+    "myRDSCreateTableSql": "CREATE TABLE `PBP` (`gid` decimal(38,0) DEFAULT NULL,  `pid` decimal(38,0) DEFAULT NULL,  `off` text,  `DEF` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `type` text,  `dseq` int(11) DEFAULT NULL,  `len` int(11) DEFAULT NULL,  `qtr` int(11) DEFAULT NULL,  `min` int(11) DEFAULT NULL,  `sec` int(11) DEFAULT NULL,  `ptso` int(11) DEFAULT NULL,  `ptsd` int(11) DEFAULT NULL,  `timo` int(11) DEFAULT NULL,  `timd` int(11) DEFAULT NULL,  `dwn` text,  `ytg` text,  `yfog` text,  `zone` text,  `yds` text,  `succ` text,  `fd` text,  `sg` text,  `nh` text,  `pts` text,  `bc` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `kne` text,  `dir` text,  `rtck1` text,  `rtck2` text,  `psr` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `comp` text,  `spk` text,  `loc` text,  `trg` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `DFB` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `ptck1` text,  `ptck2` text,  `sk1` text,  `sk2` text,  `ptm1` text,  `pen1` text,  `desc1` text,  `cat1` text,  `pey1` text,  `act1` text,  `ptm2` text,  `pen2` text,  `desc2` text,  `cat2` text,  `pey2` text,  `act2` text,  `ptm3` text,  `pen3` text,  `desc3` text,  `cat3` text,  `pey3` text,  `act3` text,  `ints` text,  `iry` text,  `fum` text,  `FRCV` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `fry` text,  `FORC` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `saf` text,  `blk` text,  `BRCV` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `fgxp` text,  `FKICKER` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `dist` text,  `good` text,  `punter` text,  `pgro` text,  `pnet` text,  `ptb` text,  `pr` text,  `pry` text,  `pfc` text,  `kicker` varchar(7) CHARACTER SET utf8 DEFAULT NULL,  `kgro` text,  `knet` text,  `ktb` text,  `kr` text,  `kry` text,  `detail` text,  KEY `fk_pid_pbp` (`pid`),  KEY `fk_gid_pbp` (`gid`),  KEY `fk_PBP_psr` (`psr`),  KEY `fk_PBP_trg` (`trg`),  KEY `fk_PBP_bc` (`bc`),  KEY `fk_PBP_DFB` (`DFB`),  KEY `fk_PBP_FORC` (`FORC`),  KEY `fk_PBP_FRCV` (`FRCV`),  KEY `fk_PBP_BRCV` (`BRCV`),  KEY `fk_PBP_FKICKER` (`FKICKER`),  KEY `fk_PBP_kicker` (`kicker`),  CONSTRAINT `fk_PBP_BRCV` FOREIGN KEY (`BRCV`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_PBP_DFB` FOREIGN KEY (`DFB`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_PBP_FKICKER` FOREIGN KEY (`FKICKER`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_PBP_FORC` FOREIGN KEY (`FORC`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_PBP_FRCV` FOREIGN KEY (`FRCV`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_PBP_bc` FOREIGN KEY (`bc`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_PBP_kicker` FOREIGN KEY (`kicker`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_PBP_psr` FOREIGN KEY (`psr`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_PBP_trg` FOREIGN KEY (`trg`) REFERENCES `PLAYER` (`player`),  CONSTRAINT `fk_gid_pbp` FOREIGN KEY (`gid`) REFERENCES `GAME` (`gid`),  CONSTRAINT `fk_pid_pbp` FOREIGN KEY (`pid`) REFERENCES `PLAY` (`pid`))",
+    "myRDSTableName": "PBP",
+    "myInputS3Loc": "s3://gtown-data-science-2018-bucket/nfl-data/PBP.csv"
+  }
+}
