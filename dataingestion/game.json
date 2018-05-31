@@ -107,7 +107,7 @@
       "id": "myInputS3Loc",
       "type": "AWS::S3::ObjectKey"
     },
-    {
+    { 
       "helpText": "The SQL statement to insert data into the RDS MySQL table.",
       "watermark": "INSERT INTO #{table} (col1, col2, col3) VALUES(?, ?, ?) ;",
       "description": "Insert SQL query",
