@@ -1,0 +1,147 @@
+{
+  "objects": [
+    {
+      "*password": "#{*myRDSPassword}",
+      "name": "rds_mysql",
+      "jdbcProperties": "allowMultiQueries=true",
+      "id": "rds_mysql",
+      "type": "RdsDatabase",
+      "rdsInstanceId": "#{myRDSInstanceId}",
+      "username": "#{myRDSUsername}"
+    },
+    {
+      "output": {
+        "ref": "DestinationRDSTable"
+      },
+      "input": {
+        "ref": "S3InputDataLocation"
+      },
+      "dependsOn": {
+        "ref": "RdsMySqlTableCreateActivity"
+      },
+      "name": "DataLoadActivity",
+      "id": "DataLoadActivity",
+      "runsOn": {
+        "ref": "Ec2Instance"
+      },
+      "type": "CopyActivity"
+    },
+    {
+      "database": {
+        "ref": "rds_mysql"
+      },
+      "name": "RdsMySqlTableCreateActivity",
+      "runsOn": {
+        "ref": "Ec2Instance"
+      },
+      "id": "RdsMySqlTableCreateActivity",
+      "type": "SqlActivity",
+      "script": "#{myRDSCreateTableSql}"
+    },
+    {
+      "instanceType": "t1.micro",
+      "name": "Ec2Instance",
+      "actionOnTaskFailure": "terminate",
+      "securityGroups": "#{myEc2RdsSecurityGrps}",
+      "id": "Ec2Instance",
+      "type": "Ec2Resource",
+      "terminateAfter": "2 Hours"
+    },
+    {
+      "database": {
+        "ref": "rds_mysql"
+      },
+      "maximumRetries": "1",
+      "name": "DestinationRDSTable",
+      "insertQuery": "#{myRDSTableInsertSql}",
+      "id": "DestinationRDSTable",
+      "type": "SqlDataNode",
+      "table": "#{myRDSTableName}",
+      "selectQuery": "select * from #{table}"
+    },
+    {
+      "name": "DataFormat1",
+      "id": "DataFormat1",
+      "type": "CSV"
+    },
+    {
+      "failureAndRerunMode": "CASCADE",
+      "resourceRole": "DataPipelineDefaultResourceRole",
+      "role": "DataPipelineDefaultRole",
+      "scheduleType": "ONDEMAND",
+      "name": "Default",
+      "id": "Default"
+    },
+    {
+      "directoryPath": "#{myInputS3Loc}",
+      "dataFormat": {
+        "ref": "DataFormat1"
+      },
+      "name": "S3InputDataLocation",
+      "id": "S3InputDataLocation",
+      "type": "S3DataNode"
+    }
+  ],
+  "parameters": [
+    {
+      "description": "RDS MySQL password",
+      "id": "*myRDSPassword",
+      "type": "String"
+    },
+    {
+      "watermark": "security group name",
+      "helpText": "The names of one or more EC2 security groups that have access to the RDS MySQL cluster.",
+      "description": "RDS MySQL security group(s)",
+      "isArray": "true",
+      "optional": "true",
+      "id": "myEc2RdsSecurityGrps",
+      "type": "String"
+    },
+    {
+      "description": "RDS MySQL username",
+      "id": "myRDSUsername",
+      "type": "String"
+    },
+    {
+      "description": "Input S3 file path",
+      "id": "myInputS3Loc",
+      "type": "AWS::S3::ObjectKey"
+    },
+    {
+      "helpText": "The SQL statement to insert data into the RDS MySQL table.",
+      "watermark": "INSERT INTO #{table} (col1, col2, col3) VALUES(?, ?, ?) ;",
+      "description": "Insert SQL query",
+      "id": "myRDSTableInsertSql",
+      "type": "String"
+    },
+    {
+      "helpText": "The name of an existing table or a new table that will be created based on the create table SQL query parameter below.",
+      "description": "RDS MySQL table name",
+      "id": "myRDSTableName",
+      "type": "String"
+    },
+    {
+      "watermark": "CREATE TABLE pet IF NOT EXISTS (name VARCHAR(20), owner VARCHAR(20), species VARCHAR(20), gender CHAR(1), birth DATE, death DATE);",
+      "helpText": "The idempotent SQL statement to create the RDS MySQL table if it does not already exist.",
+      "description": "Create table SQL query",
+      "optional": "true",
+      "id": "myRDSCreateTableSql",
+      "type": "String"
+    },
+    {
+      "watermark": "DB Instance",
+      "description": "RDS Instance ID",
+      "id": "myRDSInstanceId",
+      "type": "String"
+    }
+  ],
+  "values": {
+    "myRDSInstanceId": "nflnumbers",
+    "myRDSUsername": "db_gtown_2018",
+    "myRDSTableInsertSql": "INSERT INTO `db_nfl`.`PRO_BOWL`(`ProBowl_Year`,`PLAYER_ID`,`Pos`,`Player_first`,`Player_Last`,`ProBowl Status`,`ProBowl_Level`,`Conf`,`Tm`,`Age`,`Yrs`,`G`,`GS`,`Rating`,`Cmp`,`Att1`,`Yds1`,`TD1`,`Int1`,`Att2`,`Yds2`,`TD2`,`Rec`,`Yds3`,`TD3`,`Tkl`,`Sk`,`Int3`,`All-pro teams`)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+    "*myRDSPassword": "Gtown2018",
+    "myRDSCreateTableSql": "CREATE TABLE `PRO_BOWL` (  `ProBowl_Year` int(11) DEFAULT NULL,  `PLAYER_ID` text,  `Pos` text,  `Player_first` text,  `Player_Last` text,  `ProBowl Status` text,  `ProBowl_Level` text,  `Conf` text,  `Tm` text,  `Age` int(11) DEFAULT NULL,  `Yrs` int(11) DEFAULT NULL,  `G` int(11) DEFAULT NULL,  `GS` int(11) DEFAULT NULL,  `Rating` double DEFAULT NULL,  `Cmp` int(11) DEFAULT NULL,  `Att1` int(11) DEFAULT NULL,  `Yds1` int(11) DEFAULT NULL,  `TD1` int(11) DEFAULT NULL,  `Int1` int(11) DEFAULT NULL,  `Att2` int(11) DEFAULT NULL,  `Yds2` int(11) DEFAULT NULL,  `TD2` int(11) DEFAULT NULL,  `Rec` int(11) DEFAULT NULL,  `Yds3` int(11) DEFAULT NULL,  `TD3` int(11) DEFAULT NULL,  `Tkl` int(11) DEFAULT NULL,  `Sk` int(11) DEFAULT NULL,  `Int3` int(11) DEFAULT NULL,  `All-pro teams` text)  ",
+    "myRDSTableName": "PRO_BOWL",
+    "myInputS3Loc": "s3://gtown-data-science-2018-bucket/nfl-data/PRO_BOWL.csv"
+  }
+}
